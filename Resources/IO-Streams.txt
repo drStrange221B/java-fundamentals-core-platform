@@ -1,0 +1,189 @@
+1) Streams
+2) Stream Errors and Cleanup
+3) Chaining Streams
+4) File and Buffered Steams
+5) Accessing files with java.nio.file package
+6) File Systems
+7) Creating and Working with Zip file Systems
+
+Streams:
+    Stream is an ordered sequence of data. Provides a common I/O model.
+types:
+1) Byte streams: interact as binary data (01101110)
+2) Text Streams: Interact as Unicode Characters (text)
+
+example:
+
+Reading One Byte at a Time
+
+InputStream input = // create input stream
+int intVal;
+
+while((intVal = input.read()) >=0)
+{
+    byte byteVal = (byte) intVal;
+
+    // do something with byte value
+}
+
+Reading One Character at a Time
+
+Reader reader = // create reader instance
+int intVal;
+
+while((intVal = reader.read())>=0)
+{
+    char charVal = (char)intVal;
+
+    "do something with charVal"
+}
+
+Reading Array of Bytes
+
+InputStream input = // create input stream
+int length;
+byte[] byteBuff = new byte[10];
+while((length = input.read(byteBuff)) >=0){
+
+    for(int i=0; i<length; i++)
+    {
+        byte byteVal = byteBuff[i];
+
+        //do something
+    }
+
+}
+
+Reading Array of Characters
+
+Reader reader = // create reader
+int length;
+char[] charBuff = new char[10];
+
+while((length = reader.read(charBuff) >=0)
+{
+    for(int i = 0; i<length; i++){
+    {
+
+        char charVal = charBuff[i];
+
+        //do something
+
+    }
+}
+
+
+                            Writing
+Writing Bytes:
+OutputStream:
+
+OutputStream output = // create output stream
+byte byteVal = 100;
+output.write(byteVal);
+
+byte[] byteBuff = {0,63,127};
+output.write(byteBuff);
+
+Writing Characters:
+
+Writer writer = // create writer
+
+char charVal ='a';
+
+writer.write(charVal);
+
+char[] charBuff = {'a','b', 'c'};
+writer.write(charBuff);
+
+String stringVal = "Hello World";
+writer.write(stringVal);
+
+
+Common Input/OutputStream Derived Classes
+
+                                   InputStream: abstract class - need implementation
+                                                  |
+   ByteArrayInputStream                   PipedInputStream                    FileInputStream
+
+
+
+                                   OutputStream: abstract class - need implementation
+                                                   |
+   ByteArrayOutputStream                   PipedOutputStream                   FileOutputStream
+
+
+Common Reader/Writer Derived Classes
+
+                                   Reader: abstract class - need below implementation
+                                                    |
+ CharArrayReader                StringReader            PipedReader          InputStreamReader
+                                                                                    |
+                                                                                 FileReader
+
+
+                                    Writer: abstract class - need below implementation
+                                                     |
+CharArrayWriter           StringWriter              PipedWriter              OutputStreamWriter
+                                                                                     |
+                                                                                 FileWriter
+
+
+Stream Realities:
+1) Error Handling: Stream methods throw exceptions to indicate errors
+2) Cleanup: Cannot rely on standard java resource recovery
+
+Cleanup:
+Streams are backed by physical storage
+- Often exist outside Java runtime
+- Runtime may not reliably clean up
+
+Providing reliable cleanup
+- Streams implements Closable interface
+  1) method: close()
+
+Example:
+
+Reader reader;
+
+try{
+    reader = //open reader
+    //do something with reader
+    }catch(IOException ex)
+    {
+    //handle exception
+    }finally{
+    //reader.close();    not that simple to do is properly do like below
+
+    try{
+       if(reader !=null)
+       reader.close();
+       }catch(IOException e2)
+       {
+            // handle exception
+       }
+    }
+
+Automating Cleanup:
+AutoClosable interface
+- 1 Method: close()
+- Base interface of Closable interface
+- Provides support for try-with-resources
+
+interface AutoClosable{
+    void close() throws Exception;
+ }
+
+ interface Closable extends AutoClosable{
+    void close() throws Exception;
+ }
+
+Try-with-resources:
+ - Automates cleanup of 1 or more resources
+ - A "resource" is any type that implements AutoClosable
+ - Syntax similar to traditional try Statement
+ - Optionally includes catch block(s)
+  - Handle try body
+  - Handle close method call
+
+
+
