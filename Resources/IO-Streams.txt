@@ -186,4 +186,209 @@ Try-with-resources:
   - Handle close method call
 
 
+                                        Chaining Streams
+
+Streams are often chained together
+- One stream instance leverages other
+- Creates higher-level functionality
+- Simplifies re usability
+- Chain using constructor
+
+InputStreamReader leverages chaining
+- Reader behavior over InputStream
+- Character behavior over binary
+
+Chaining Streams
+
+void doChain(InputStream in) throws IOException{
+    int length;
+    char[] charBuff = new char[128];
+
+    try(InputStreamReader reader = new InputStreamReader(in)){
+
+    while((length = reader.read(charBuff))>=1)
+    {
+        //do something
+
+    }
+}
+
+Classes available to simplify customization
+- FilterReader, FilterWriter, FilterInputStream, FilterOutputStream
+- abstract classes
+- Methods call to contained stream methods
+- Override only customized methods
+
+
+                                        Buffered Streams
+
+- Direct file access can be inefficient
+- Buffered streams can improve efficiency
+- Buffers content in memory
+- Reduces underlying stream interaction
+
+Buffering available for all 4 stream types
+- BufferedReader
+- BufferedWriter
+- BufferedInputStream
+- BufferedOutputStream
+
+example:
+
+try(BufferedReader br = new BufferedReader(new FileReader("*.txt"))
+{
+    int intVal;
+
+    while((intVal = br.read())>=0)
+    {
+        char charVal = (char) intVal;
+    }
+}
+
+Line breaks vary across platforms
+- Unix
+  \n (new line)
+- Windows
+  \r\n(carriage return & new line)
+
+Buffered Streams add line break support
+- Uses correct value for current platform
+- BufferedWriter
+  Generate line breaks: newLine()
+- BufferedReader
+  Line based read: readLine()
+
+Example:
+void writeData(String[] data) throws IOException{
+
+try(BufferedWriter bw =
+                   new BufferedWriter(new FileWriter("*.txt"))){
+
+       for(String d: data)
+       {
+          bw.write(d);
+          bw.newline();
+       }
+
+}
+
+                        Reading Lines
+
+void readData() throws IOException{
+
+try(BufferedReader br =
+            new BufferReader(new FileReader("*.txt"))){
+        String intValue
+      for((intValue = br.readLine()) !=null){
+        System.out.println(inValue);
+      }
+
+}
+}
+
+
+Accessing Files with the java.nio.file package
+
+java.nio.file preferred package for files
+- java.io File xx streams are deprecated
+
+Provides a number of benefits over java.io
+- Better exception reporting
+- Greater scalability
+- More file system feature support
+- Simplifies common tasks
+
+Path:
+- used to locate a file system item
+- can be a file or a directory
+
+Paths
+- static path factory methods
+- from string-based hierarchical path
+- From URI
+
+Path p1 = Paths.get("//document//data//foo.txt");
+Path p2 = Paths.get("//document", "data", "foo.txt")
+
+                                        Files Type
+Files:
+ - Static Methods for interacting with files
+ - Create, Copy, Delete, etc.
+ - Open File streams
+   - newBufferedReader
+   - newBufferedWriter
+   - newInputStream
+   - newOutputStream
+ - Read/Write file contents
+   - readAllLines
+   - write
+
+ Reading Lines with BufferedReader
+
+ void readData() throws IOException{
+
+    try(BufferedReader br =
+                       Files.newBufferedReader(Path.get("data.txt"))){
+
+        String inValue;
+        while((inValue = br.readLine()) !=null)
+        {
+            System.out.println(inValue);
+
+        }
+
+    }
+
+ }
+
+Read All Lines
+
+void readThemAll() throws IOException{
+    List<String> lines =
+                    Files.readAllLines(Paths.get("data.txt"));
+
+    for(String line: lines)
+    {
+        System.out.println(line);
+    }
+
+}
+
+
+File Systems:
+Files are contained within a file system
+- Has a default file system
+- Specialized file systems are supported in java
+  - Example: Zip file system
+- Path instances are tied to file system
+  - Paths class works only for default
+
+
+File System Types
+FileSystem:
+- Represents an individual file system
+- Factory for Path instances
+
+FileSystems
+- static FileSystem factory methods
+- Open or create a file system
+  - newFileSystem
+
+Accessing File Systems
+
+File System identified by URIs
+- Specifics of URI vary greatly
+- Zip file system uses "jar:file" scheme
+  - jar:file:/emerys/data/bar.zip
+
+File systems support custom properties
+- Different for each file system type
+- Examples
+  - Whether to create if doesn't exit
+  - String encoding
+
+
+
+
+
 
