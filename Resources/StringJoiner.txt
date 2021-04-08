@@ -1,0 +1,250 @@
+More Powerful Solutions to Creating String Representations
+
+The need for more powerful string creation
+- Concatenating strings is often not enough
+  - Very focused on creation details
+  - Numeric conversions awkward
+- StringBuilder has the same issue
+
+Options for more powerful string creation
+- StringJoiner
+  - Simplifies joining a sequence of values
+- String formatting
+  - Can specify desired appearance without dealing with creation details
+
+
+                                            StringJoiner
+StringJoiner has a specific purpose
+- Simplify composing a string comprised of a sequence of values
+
+How it works
+- Construct the StringJoiner
+  - Specify string to separate values
+  - Optionally specify start/end strings
+- Add values
+
+Example:
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add("alpha");
+    sj.add("theta");
+    sj.add("gamma");
+String theResult = sj.toString();
+= alpha, theta, gamma
+
+StringJoiner sj = new StringJoiner(", ");
+sj.add("alpha").add("theta").add("gamma");
+String theResult = sj.toString();
+= alpha, theta, gamma
+
+StringJoiner with Start and End Values
+
+StringJoiner sj = new StringJoiner(", ", "{", "}");
+sj.add("alpha");
+sj.add("theta");
+sj.add("gamma");
+String theResult = sj.toString();
+= {alpha, theta, gamma}
+
+
+[alpha], [theta], [gamma]
+StringJoiner sj = new StringJoiner("],[", "[", ']');
+sj.add("alpha");
+sj.add("theta");
+sj.add("gamma");
+String theResult = sj.toString();
+= [alpha], [theta], [gamma]
+
+Handling a Single Value
+
+StringJoiner sj1 = new StringJoiner(", ");
+sj1.add("alpha");
+String theResult = sj1.toString();
+= alpha
+
+StringJoiner sj2 = new StringJoiner(", ", "{", "}");
+sj2.add("alpha");
+String theResult2 = sj2.toString();
+
+toString when no values added
+- When constructed with separator only
+  - Returns empty string
+- When constructed with start/end strings
+  - Returns string with start/end only
+
+StringJoiner sj1 = new StringJoiner(", ");
+String theResult1 = sj1.toString();   =
+
+StringJoiner sj2 = new StringJoiner("{,}");
+String theResult2 = sj2.toString(); = {}
+
+Custom Empty Handling
+StringJoiner sj1 = new StringJoiner(", ");
+sj1.setEmptyValue("EMPTY");
+String theResult1 = sj1.toString(); = EMPTY
+
+StringJoiner sj1 = new StringJoiner(", ", "{","}");
+sj1.setEmptyValue("EMPTY");
+String theResult1 = sj1.toString(); = EMPTY
+
+
+StringJoiner sj1 = new StringJoiner(", ");
+sj1.setEmptyValue("EMPTY");
+sj1.add("");
+String theResult1 = sj1.toString(); =
+
+StringJoiner sj1 = new StringJoiner(", ", "{","}");
+sj1.setEmptyValue("EMPTY");
+sj1.add("")
+String theResult1 = sj1.toString(); = {}
+
+
+                    Constructing Strings with Format Specifiers
+
+Format specifiers
+- Focus is on describing the desired result
+  - Not concerned with the how
+- Can control many aspects of appearance
+  - Positioning
+  - Decimal Places
+  - Representation
+Some methods supporting format specifiers
+  - String.format
+  - System.out.printf
+  - Formatter.format
+
+                    Concatenation vs. Formatting
+
+int david = 13, dawson = 11, dillon = 4, gordon = 2
+result = My nephews are 13, 11, 4 and 2 years old
+
+String s1 = "My nephews are " + david + ", " + dawson + ", " + dillon + ", and " + gordon + " years old";
+
+String s2 = String.format(
+                "My nephews are %d, %d, and %d years old", david, dawson, dillon, gordon);
+
+int david = 13, dawson = 11, dillon = 4, gordon = 2;
+
+double avgDiff = ((david - dawson) + (dawson - dillon) + (dillon - gordon))/3.0d;
+
+String s3 =
+        "The average age between each is " + avgDiff + " years";
+= The average age between each is 3.6666666666666665 years
+
+String s4 = String.format(
+          "The average age between each is %.1f years", avgDiff);
+= The average age between each is 3.7 years
+
+
+Parts of a Format Specifier
+
+                                        Decimal places to display
+                                        |
+% [argument index] [flags] [width] [precision] conversion
+                               |
+                           Minimum characters to display
+                           (Space-padded, right-justified by default)
+
+
+Common Format Conversions
+
+       Meaning                   type            Example Value        Result
+ d     Decimal                   Integer              32                32
+ o     Octal                     Integer              32                40
+ xX    Hex                       Integer              32                20
+ f     Decimal                   Floating Point      123.0              123.00000
+ eE    Scientific Notation       Floating Point      123.0              123.00000e+02
+ s     String                    General             "Hello"            Hello
+
+
+                                 Format Flags: #
+
+String s1 = String.format("%d",32); = 32
+String s2 = String.format("%o",32); = 40
+String s2 = String.format("%x",32); = 20
+with flag #
+String s1 = String.format("%#o",32); =040
+String s2 = String.format("%#x",32); =0x20
+String s3 = String.format("%#X",32); =0X20
+
+Flags      Meaning
+#          Include radix
+0          Zero-padding
+-          Left justify
+,          Include grouping separator
+space      Leave space for positive numbers
++          Always show sign
+(          Enclose negative values in parenthesis
+
+                                  Format Flags: 0 and -
+
+s1 = String.format("W:%d X:%d", 5, 235);                         W:5 X:235
+s2 = String.format("W:%d X:%d", 481, 12);                        W:481 X:12
+
+s3 = String.format("W:%4d X:%4d", 5, 235);                       W:   5 X: 235
+s4 = String.format("W:%4d X:%4d", 481, 12);                      W: 481 X:  12
+
+s5 = String.format("W:%04d X:%04d", 5, 235);                     W:0005 X:0235
+s6 = String.format("W:%04d X:%04d", 481, 12);                    W:0481 X:0012
+
+s7 = String.format("W:%-4d X:%-4d", 5, 235);                     W:5    X:253
+s8 = String.format("W:%-4d X:%-4d", 481, 12);                    W:481  X:12
+
+                                  Format Flags:,
+
+s1 = String.format("%d", 1234567);                  1234567
+s2 = String.format("%,d", 1234567);                 1,234,567
+s3 = String.format("%,d", 1234567.0);               1,234,567.00
+
+                                   Format Flags: Space, + , and (
+
+s1 = String.format("%d",123);            123
+s1 = String.format("%d",123);            -123
+s2 = String.format("% d",123);            123
+s2 = String.format("% d",-123);          -123
+s3 = String.format("%+d",123);           +123
+s4 = String.format("%+d",-123);          -123
+s5 = String.format("%(d", 123);          123
+s6 = String.format("%(d", -123);         (123)
+s7 = String.format("% (d", 123);          123
+
+                                    Argument Index
+
+Index                    Meaning
+Not specified            Corresponds sequentially to argument
+$index                   Index of argument to use
+<                        Corresponds to same argument as previous format specifier
+
+s1 = String.format("%d %d %d", 100, 200, 300);           100 200 300
+s2 = String.format("%$3d %$2d %2d", 100, 200, 300);      300 200 100
+s3 = String.format("%$2d %<04d %$1d", 100, 200, 300);    200 0200 100
+
+
+                            Writing Formatted Content to a Stream
+
+Formatter Class
+- Provides formatting capabilities
+- Writes content to any type that implements Appendable Interface
+
+Writer Stream class
+- Implements Appendable Interface
+
+
+                        Writing Formatted Content to a Stream
+
+void doWrite(int david, int dawson, int dillon, int gordon, double avgDiff) throws IOException {
+
+    BufferedWriter writer =
+                    Files.newBufferedWriter(Paths.get("myFile.txt"));
+
+    try(Formatter f = new Formatter(writer)){
+
+        f.format("My nephews are %d, %d, %d, and %d years old", david, dawson, dillon, gordon);
+        f.format("The average age between each is %.1f years", avgDiff);
+    }
+}
+
+More info on formatting:
+- http://bit.ly/java8formatter
+
+java 8 date/time formatting
+ - what's new in java 8
