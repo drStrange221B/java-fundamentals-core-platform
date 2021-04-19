@@ -1,0 +1,291 @@
+                                                Log System
+
+We need a way to capture app activity
+- Record unusual circumstances or errors
+- track usage info
+- Debug
+
+The required level of detail can vary
+- Sometimes need lots of details
+  - Newly deployed app
+  - App is experiencing errors
+- Generally need less detail
+  - App is mature and stable
+
+Java provides a built-in solution
+- java.util.logging
+
+                                                Making Log Calls
+public class Main{
+
+    public static void main(String[] args){
+        LogManager lm = LogManager.getLogManager();
+
+        Logger logger = lm.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+        logger.log(Level.INFO, "My First log message");
+        logger.log(Level.INFO, "Another message");
+    }
+
+}
+
+public class Main{
+
+    static Logger logger =
+                    LogManager.getLogManager().getLogger(Logger.GLOBAL_LOGGER_NAME);
+    public static void main(String[] args){
+
+        logger.log(Level.INFO, "My First log message");
+        logger.log(Level.INFO, "Another message");
+    }
+
+}
+
+
+                                    Levels control logging detail
+- Each log entry is associated with a level
+  - Included with each log call
+- Each Logger has a capture level
+  - Use setLevel method
+  - Ignores entries below capture level
+
+Each Level has a numeric value
+- 7 basic log level
+- 2 special levels for logger
+- Can define custom levels
+  - Should generally be avoided
+
+                                    Logging Levels
+Level               Numeric Level                   Description
+SERVER              1000                            Serious Failure
+WARNING             900                             Potential Problem
+INFO                800                             General Info
+CONFIG              700                             Configuration info
+FINE                500                             General developer info
+FINER               400                             Detailed developer info
+FINEST              300                             Specialized developer info
+
+
+                                    Core Log Components
+Consists of 3 core Components
+- Logger
+  - Accepts app calls
+- Handler
+  - Publishes logging information
+  - A Logger can have multiple
+- Formatter
+  - Formats log info for publication
+  - Each Handler has 1 Formatter
+
+                                    Creating/Adding Log Components
+Creating a logger
+- Use Logger.getLogger static method
+- Loggers named with a string
+- Once created accessible in LogManager
+
+Adding a Handler
+- Java provides built-in Handlers
+- Add with Logger.addHandler
+
+Adding a Formatter
+- Java provides built-in Formatters
+- Add with Handler.setFormatter
+
+                                    Creating/Adding Log Components
+public class Main{
+static Logger logger = Logger.getLogger("com.pluralsight");
+
+public static void main (String[] args)
+{
+    Handler h = new ConsoleHandler();
+    Formatter f = new SimpleFormatter();
+    h.setFormatter(f);
+    logger.addHandler(h);
+    logger.setLevel(Level.INFO);
+    logger.log(Level.INFO, "We're logging!");
+}
+}
+
+                                    Built-in Handlers
+Java provides several built-in handlers
+- Inherit directly or indirectly from Handler
+Commonly used built-in Handlers
+- ConsoleHandler
+  - Writes to System.err
+- StreamHandler
+  - Writes to specified OutputStream
+- SocketHandler
+  - writes to a network socket
+- FileHandler
+  - Writes to 1 or more files
+
+                                    FileHandler
+FileHandler output options
+- Can output to a single file
+- Can output to a rotating set of files
+
+Working with rotating set of files
+- Specify approximate maz size in bytes
+- Specify max number of files
+- Cycles through reusing oldest file
+
+Supports a substitution-based file naming
+- Reduces issues related to system and configuration differences
+- Automates rotating file set naming
+
+Values     Meaning                      config                      Unix                              Windows
+/          Platform slash\backslash     ./foo.low                   ./foo.log                         .\foo.log
+%t         Temp directory               %t/foo.log                  /var/tmp/foo.log                  C:\Users\Rojaya\AppData\Local\Temp\foo.log
+%h         User's home directory        %h/foo.log                  /var/users/Rojaya/foo.log            C:\Users\Rojaya\foo.log
+%g         Rotating log generation      foo_%g.log                  foo_0.log =>foo_1.log=>foo_2.log
+
+
+                                    Logging with FileHandler
+public class Main{
+
+static Logger Logger = Logger.getLogger("com.pluralsight");
+
+public static void main ( String[] args)
+{
+    FileHandler h = new FileHandler("%h/myapp_%g.log", 1000, 4); 1000-> Each about 1000 bytes size, Rotating set of 4
+                                    C:\Users\RojayayMaharjan\myapp_0.log
+                                    C:\Users\RojayayMaharjan\myapp_1.log
+                                    C:\Users\RojayayMaharjan\myapp_2.log
+                                    C:\Users\RojayayMaharjan\myapp_3.log
+    h.setFormatter(new SimpleFormatter());
+
+    logger.addHandler(h);
+
+}
+
+                                    Built-in Formatters
+Java provides two built-in Formatters
+- Both inherit directly from Formatter
+XMLFormatter
+- Formats content as XML
+- Root element named log
+- Each entry in element name record
+
+SimpleFormatter
+- Formats content as simple text
+- Format is customizable
+  - Uses standard formatting notation
+
+                                    Log Configuration File
+Configuration info can be set in a file
+- Follows standard properties file format
+- Can replace code-based config
+- Can be used with code-based config
+
+Set file name with a system property
+- java.util.logging.config.file
+- Pass value with java -D option
+
+Specific values depend on classes
+- Most code-based option available
+
+Naming of values for Handlers and Formatters
+- Fully qualified class name
+- Followed by a "dot" and the value name
+
+Naming of values for Loggers
+- Name of Logger as passed to getLogger
+- Followed by a "dot" and the value name
+
+
+                                    Logging Code-based Configuration
+
+public class Main{
+    static Logger logger = Logger.getLogger("com.pluralsight");
+
+    public static void main(String[] args)
+    {
+        Handler h = new ConsoleHandler();
+        h.setLevel(Level.All);
+        h.setFormatter(new SimpleFormatter());
+        logger.addHandler(h);
+        logger.setLevel(Level.All);
+        logger.log(Level.INFO, "We're Logging!");
+    }
+}
+
+java -Djava.util.logging.SimpleFormatter.format = %5$s,%2$s,%4$s%n
+com.pluralsight.training.Main
+
+                                    Logging Configuration File
+log.properties
+java.util.logging.ConsoleHandler.level = ALL
+java.util.logging.ConsoleHandler = java.util.logging.SimpleFormatter
+com.pluralsight.handlers = java.util.logging.ConsoleHandler
+java.util.logging.SimpleFormatter.format = %5$s, %2$2, %4$s%n
+
+java -Djava.util.logging.config.file=log.properties com.pluralsight.training.Main
+
+public class Main{
+
+    static Logger logger = Logger.getLogger("com.pluralsight");
+
+    public static void main(String[] args)
+    {
+        logger.log(Level.INFO, "We're Logging!");
+
+    }
+}
+
+
+                                     Logger Naming
+
+Naming implies a parent-child relationship
+- LogManager links Loggers in a hierarchy based on each Logger's name
+
+Logger naming
+- Should following hierarchical naming
+- Corresponds to type hierarchy
+  - Each "dot" separates a level
+- Generally tied to a class full name
+
+package com.ps.training;
+    public class Main{
+        static Logger pkgLogger = Logger.getLogger("com.ps.training");
+        static Logger logger = Logger.getLogger("com.ps.training.Main");
+
+public static void main(){
+
+}
+
+package com.ps.training;
+public class Student{
+    static Logger logger = Logger.getLogger("com.ps.training.Student");
+    //
+}
+
+
+Hierarchy
+
+                                                com.ps.training
+                                                       |
+                     com.ps.training.Student                    com.ps.training.Main
+
+
+                                        Leveraging Logger Naming Hierarchy
+
+Making the most of the hierarchical system
+- Focus on capturing important info
+  - With the option to get details if needed
+- Manage setup primarily on parents
+- Manage log calls primarily at children
+
+                                        Logging Hierarchy and Levels
+Loggers do not requires their to be level set
+- Log level can be null
+  - Will inherit parent level
+- Primarily set level on parents
+  - Normally somewhat restrictive level
+- Set more detail level on child if needed
+
+Loggers do not require handlers
+- A Logger doesn't log if no handler
+  - But does pass up to parent Logger
+- primarily add Handlers to upper parents
+- Add Handlers to child if needed
+
