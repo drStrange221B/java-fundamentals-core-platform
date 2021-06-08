@@ -1,0 +1,138 @@
+- JDBC History and Context
+- Setting up your development environment
+- Configuring and Connecting JDBC drivers
+- Query, update and Delete data using JDBC
+- Working with CLOB, BLOBs, and Stored Procedures
+- Advanced Features like instance pooling and transactions and Cached RowSets
+
+The JDBC API is used to: create, read, update, delete data in a relational database using the Java Programming
+language.
+JDBC is data agnostic ( Database-agnostic is a term describing the capacity of software to function with any vendor's
+database management system (DBMS).
+
+Connection Methods
+- DriverManager with services
+- Class.forName() with DriverManager
+- DataSource
+  - JNDI
+  - Java/Jakarta EE
+  - CDI
+
+JDBC Follows the Facade Pattern
+
+JDBC Interfaces> Driver Manager> Driver> Connection> Statement>
+                                                   > Prepared Statement>   resultSet
+
+Connection:
+
+public class ProductsComponent{
+
+     public boolean tryConnection() throws Exception{
+
+      // this method of Class.forName is used before jdbc 4 version
+     // Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+
+     Connection connection =
+           DriverManager.getConnection("jdbc:mysql://localhost:3306/classicmodels?" +
+           "user=root&password=pluralsight&serverTimeZone=UTC");
+
+         //  jdbc:<driver>:<host>/<database-name> username password
+
+
+Obtaining a DataSource using:
+1) JNDI
+2) Java EE/ Jakarta EE @Resource
+3) CDI @Inject
+
+
+The database source type is introduced on jdbc 2.0. The purpose of Datasource is to abstract the creating
+and obtaining the database connection.
+Instead of setting JDBC driver uri properties directly in the application code, they declared in j2ee.xml
+configuration file at runtime. At runtime j2ee container will read JDBC.xml configuration files and load the
+driver it declared configuring with URI and properties defined in the configuration files.
+The developer would then access the datasource from context object provided by j2ee component using JNDI
+(Directory Service API)
+
+old code:
+InitialContext ctx = new InitialContext();
+DataSource datasource = (DataSource)ctx.lookup("jdbc/mysql");
+Connection connection = datasoucre.getConnection("genius", "abracadabra");
+boolean isValid = connection.isValid(2);
+connection.close();
+return isValid;
+
+JDBC Query:
+Statement statement = connection.createStatement();
+ResultSet resultSet = statement.executeQuery("select * from table");
+
+while(resultSet.next())
+{
+    String name = resultset.getString("productName");
+
+}
+
+resultSet.close();
+statement.close();
+connection.close();
+
+
+SQL Exception type:
+BatchUpdateException
+RowSetWarning
+SerialException
+SQLClientInfoException
+SQLNonTransientException
+SQLRecoverableException
+SQLTransientException
+SQLWarning
+SyncFactoryException
+SyncProviderException
+
+
+catch(Exception ex)
+{
+    System.out.println("SQLException message " + exception.getMessage());
+
+    if(exception instanceof SQLException)
+    {
+        SQLException sqlException = (SQLException)exception;
+        System.out.println("Error Code: " + sqlException.getErrorCode());
+        System.out.println("SQL State: " + sqlException.getSQLState());
+    }
+
+    System.out.println("Stacktrace: " + exception.printStackTrace());
+
+}finally{
+    resultSet.close();
+    statement.close();
+    connection.close();
+}
+
+// check the meaning of sql error code
+https://www.briandunning.com/error-codes/
+
+
+Using the PreparedStatement and ResultSet
+when used Query statement, the entire query statement is sent over the network to the database
+Database then compiles the SQL Plan with JDBC statement ( in three steps)
+1) parse the SQL query in format native to the database platform
+2) optimize the SQL query plan, so that it runs efficiently as possible
+3) Execute the SQL query to get the resultset.
+
+using query statement object the steps repeats as many time it is executed. as the result it takes
+database time and resources (drain on memory and processing power adds up quickly) that could affect the thought put of the database.
+
+In contrast, when prepared statement is used for the first time. it goes though the same process.
+but the fully parsed and optimized query get stored for future use. when prepared statement is used
+again identifier is send instead the actual query. Since the database has kept the parsed and optimized
+query in the memory, it could directly execute the prepared statement every time it is used. This
+improved the throughput and the performance.
+
+eg
+PreparedStatement preparedStatement = connection.preparedStatement("SELECT * FROM PRODUCTS");
+ResultSet resultSet = preparedStatement.executeQuery();
+
+Using Input Parameter
+
+
+
