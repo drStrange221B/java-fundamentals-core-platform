@@ -134,5 +134,322 @@ ResultSet resultSet = preparedStatement.executeQuery();
 
 Using Input Parameter
 
+CLOB Data type in JDBC: Large chunks of Text.
 
+Using JDBC Store and Read CLOB and BLOB Data
+
+CLOB: Legal Documents Resumes other documents
+
+BLOBs: Images Video Cryptographic Info
+
+
+
+public boolean storeCLOB(String prodLine, InputStreamReader inStream) throws Exceptions{
+
+    String sqlString = "UPDATE productLines SET htmlDescription = ? where productLine = ?";
+
+    try(Connection connection = DriverManager.getConnection(
+           "jdbc:mysql://localhost:3306/classicmodels/user=root&password=*****");
+
+           PreparedStatement prepareStatement = connection.preparedStatement(sqlString);){
+
+           preparedStatement.setString(2,prodLine);
+           preparedStatement.setCharacterStream(1, inStream);
+           preparedStatement.executeUpdate();
+
+           return true;
+
+           }
+
+}
+
+
+
+public static void main(String[] args){
+
+
+    try{
+
+        ProductComponent comp = new ProductComponent();
+
+        String prodLine = "Planes";
+        String filesName = "JanesAllWorldAircraft1913.txt";
+
+        File file = new File(fileName);
+        FileReader fileReader = new FileReader(file);
+
+        boolean success = camp.storeCLOB(prodLine, fileReader);
+
+        if(success)
+        {
+            System.out.println("Success: The text contents of " + fileName + "has been udpated");
+        }else{
+            System.out.println("Fail: The text contents of "+ fileName + "has NOT been");
+        }
+
+
+    } catch(Exception exception ){
+         ....
+    }
+
+}
+
+
+Pros and Cons of Stored Procedures
+
+            Pros                                    |            Cons
+
+ - Database experts write them                        - More work for the database
+ - Better at preventing injection attacks             - Depends on DBA to implement
+ - More secure in terms of authorization              - Not as portable as SQL
+
+
+public void listProductsBy(String productLine) throws Exception{
+
+    try(Connection connection = DriverManager.getConnection(
+        "jdbc:mysql://localhost:3306/classsicmodels?user=root&password =******");
+        CallableStatement callableStatement=
+                connection.prepareCall("{call listProductsFor(?)}");){
+             callableStatement.setString(1,productLine);
+
+             boolean success = callableStatement.execute();
+
+             if(success)
+             {
+                try(ResultSet resultSet = callableStatement.getResultSet();){
+
+                while(resultSet.next()){
+                    String name = resultSet.getString("productName");
+                    System.out.println(name);
+
+                }
+
+             }
+
+
+
+                }
+
+
+}
+
+IN, OUT, and INOUT Parameters
+
+IN: IN parameter is default. it goes in but doesn't come out.
+OUT: OUT parameter is like a return value. It doesn't go in, but it does come out
+INOUT: parameters acts like both an IN and OUT parameter. Values goes go in and new values comes out.
+
+
+JDBC Connection Pools:
+
+Alternatives for JDBC Connection Management
+
+1)DriverManager JDBC 4
+
+2) Class.forName() JDBC 2-3
+
+3) JDBC 3, J2EE
+
+4) DataSource Injections
+    JDBC 4, Java/Jakarta EE
+
+5) JDBC Connection Pooling
+   JDBC 3-4
+
+The process of creating new JDBC connection can be expensive in terms of the time it takes to make the connections,
+and the resource is used.
+Every thread in an application must create a new connection requiring memory and the sockets.
+This cost quickly adds up, even if you're only operating on a single thread. There is also a cost of
+closing the connection.
+
+With JDBC connection pool rather than creating new thread, existing pools are reused every
+time you need to interact with database. JDBC pools cache the connection, every time new connection is
+need connection are fetched from cache.
+
+Most popular JDBC Connection Pools Proiders
+1) HikariCP GitHUb: HikariCP
+2) Apache DBCP  GitHub: commons-dbcp
+3) C3PO  GitHub: c3po
+
+HikariCP:
+
+<dependency>
+    <groupId>com.zaxxer</groudId>
+    <artifactId>HikariCP</artifactId>
+    <version>3.4.0</version>
+</dependency>
+
+
+
+
+class Main implements Runnable{
+
+public void run(){
+
+    for(int i=0; i<3; i++)
+    {
+        try{
+            OrdersComponent comp = new OrdersComponent();
+            comp.tryConnection();
+
+        }catch (Exception exception){
+            ;
+        }
+
+    }
+
+
+}
+
+
+
+public static void main(String[] args)
+{
+      new ConnectionPool();
+
+      System.out.println("Thread Conn");
+      System.out.println("------ -----");
+
+      for(int i=0; i<3; i++){
+           Thread t = new Thread(new Main(), "Main_" + i);
+           t.start();
+
+      }
+
+}
+
+
+
+}
+
+
+
+public class OrdersComponent{
+
+    public void tryConnection() throws Exception{
+
+    try(Connection con = ConnectionPool.getConnection();){
+
+        PreparedStatement preparedStatement
+            = con.preparedStatement("select * from orderDetails");
+        preparedStatement.execute();
+
+        String msg = Thread.currentThread().getName() + "--> " + this.getConnectionId(con);
+        System.out.println(msg);
+    }
+
+}
+
+public class ConnectionPool{
+
+     private static HikariDataSource dataSource;
+
+     static{
+        HikariConfig config = new HikariConfig();
+        Config.setJdbcUrl("jdbc:mysql://localhost:3306/classicmodels?user=root&password=*****");
+        dataSource = new HikariDataSource(config);
+        dataSource.setMaximumPoolSize(4);
+     }
+
+     public ConnetionPool(){}
+
+     public static Connection getConnection() throws SQLException{
+        return dataSource.getConnection();
+     }
+
+}
+
+RowSet is an extension of JDBC ResultSet. RowSet is java beans compliant and toolable
+RowSet can be used when disconnected from the database.
+
+
+ResultSet are needed to be connected to the database, as long as the resultSet are in used. Only when
+the closed method in the results set is called it get disconnected and frees resources like memory and
+sockets and threads. Once close you need to create a new resultSet connection.
+
+
+RowSet however cache the data and can disconnect from the database. it retains rows and columns of the data
+as if it is still connected.
+
+JDBC RowSet Types
+1) JdbcRowSet
+   remains connected Alternative API cannot be cached
+
+2) CachedRowSet
+    is disconnected keeps the result in memory and release the connection freeing the resources to the
+    database. can be serialize and can be send across the network.
+3) WebRowSet
+    supports XML and extends CachedRowSet
+    Is disconnected
+4) FilteredRowSet
+   Allows filtering
+   Is disconnected
+5) JoinRowSet
+    Is disconnected
+
+
+CachedRowSet Pros and Cons
+
+Pros                                                |    Cons
+- Less work for the relational database              - May consume too much memory
+- Serializable                                       - Data may be stale; not up to date
+- Shared across the network
+- Faster
+
+CashedRowSets are good when Data that rarely changes ( static Data )
+Data that is not too extensive (Smaller Results)
+
+
+example:
+
+public class OrderComponent{
+
+    public CachedRowSet ordersByStatus(String status) throws Exception{
+
+        String queryString = "SELECT * FROM order where status = ?";
+
+        RowSetFactory rowSetProvider = RowSetProvider.newFactory();
+        CachedRowSet rowSet = rowSetProvider.createCachedRowSet();
+
+        rowSet.setUrl("jdbc:mysql://localhost:3306/classicmodels?user=root&password=*****");
+        rowSet.setCommand(queryString);
+        rowSet.setString(1, status);
+        rowSet.execute();
+        return rowSet;
+
+    }
+
+
+}
+
+
+public static void main(String[] args) throws Exception{
+
+    String status = "In Process";
+    OrderComponent comp = new OrderComponent();
+
+    try(CachedRowSet rowSet1 = comp.ordersByStatus(status);
+        FileOutputStream fout = new FileOutputStream("row_set_serialized.ser");
+        ObjectOutputStream oos = new ObjectOutputStream(fout);){
+
+        oos.writeObject(rowSet1);
+        fout.close();
+        oos.closed();
+
+        try(FileInputStream fin = new FileInputStream("row_set_serialized.ser");
+            ObjectInputStream ois = new ObjectInputStream(fin);
+            CachedRowSet rowSet2 = (CachedRowSet)ois.readObject();){
+
+            while(rowSet2.next()){
+                int customerNumber = rowSet2.getInt("customerNumber");
+                int orderNumber = rowSet2.getInt("orderNumber");
+                System.out.println(customerNumber + " " + orderNumber + " " + status);
+
+            }
+        }catch (Exception exception{
+
+        }
+
+
+}
 
